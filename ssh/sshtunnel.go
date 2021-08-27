@@ -35,6 +35,12 @@ func (tunnel *SshTunnel) Launch() error {
 	}
 	defer tunnel.frontendListener.Close()
 
+	sshConn, sshErr := ssh.Dial("tcp", tunnel.SshServerUrl, tunnel.Config)
+	if sshErr != nil {
+		return sshErr
+	}
+	defer sshConn.Close()
+
 	for {
 		frontendConn, err := tunnel.frontendListener.Accept()
 		if err != nil {
@@ -43,7 +49,7 @@ func (tunnel *SshTunnel) Launch() error {
 			}
 			return nil
 		}
-		go tunnel.forwardFrontendToBackend(frontendConn)
+		go tunnel.forwardFrontendToBackend(frontendConn, sshConn)
 	}
 }
 
@@ -53,15 +59,8 @@ func pipeConn(writer net.Conn, reader net.Conn, c chan error) {
 }
 
 
-func (tunnel *SshTunnel) forwardFrontendToBackend(frontendConn net.Conn) {
+func (tunnel *SshTunnel) forwardFrontendToBackend(frontendConn net.Conn, sshConn *ssh.Client) {
 	defer frontendConn.Close()
-
-	sshConn, err := ssh.Dial("tcp", tunnel.SshServerUrl, tunnel.Config)
-	if err != nil {
-		fmt.Printf("Ssh dial error: %s\n", err)
-		return
-	}
-	defer sshConn.Close()
 
 	backendConn, err := sshConn.Dial("tcp", tunnel.RemoteBackendUrl)
 	if err != nil {
@@ -76,10 +75,10 @@ func (tunnel *SshTunnel) forwardFrontendToBackend(frontendConn net.Conn) {
 	go pipeConn(backendConn, frontendConn, pipeErrChan)
 	err = <- pipeErrChan
 	if err != nil {
-		fmt.Printf("io.Copy error: %s", err)
+		fmt.Printf("io.Copy error: %s\n", err)
 	}
 	err = <- pipeErrChan
 	if err != nil {
-		fmt.Printf("io.Copy error: %s", err)
+		fmt.Printf("io.Copy error: %s\n", err)
 	}
 }
