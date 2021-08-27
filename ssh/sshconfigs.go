@@ -3,33 +3,16 @@ package ssh
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 
 	"golang.org/x/crypto/ssh"
 )
 
-func GetAuthSshConfigs() (*ssh.ClientConfig, error) {
-	buffer, err := ioutil.ReadFile("authorized-ssh-private-key")
-	if err != nil {
-		return nil, err
-	}
-
-	key, err := ssh.ParsePrivateKey(buffer)
-	if err != nil {
-		return nil, err
-	}
-
-	buffer, err = ioutil.ReadFile("host-md5-fingerprint")
-	if err != nil {
-		return nil, err
-	}
-	md5Fingerprint := string(buffer)
-	
+func GetAuthSshConfigs(sshUser string, key ssh.AuthMethod, md5Fingerprint string) (*ssh.ClientConfig, error) {	
 	return &ssh.ClientConfig{
-		User: "ubuntu",
+		User: sshUser,
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(key),
+			key,
 		},
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 			//rework later to use ssh.FingerprintSHA256(key)

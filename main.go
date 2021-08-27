@@ -30,15 +30,33 @@ func getTunnelServerUrl() (string, error) {
 	return strings.TrimSuffix(string(buffer), "\n"), nil
 }
 
-func main() {
-	sshConfig, err := ssh.GetAuthSshConfigs()
+func getTunnelServerFingerprint() (string, error) {
+	buffer, err := ioutil.ReadFile("host-md5-fingerprint")
 	if err != nil {
-		panic("Failed to initiate ssh auth configs: " + err.Error())
+		return "", err
+	}
+	return string(buffer), nil
+}
+
+func main() {
+	privateKeyPtr, err := ssh.ReadPrivateKeyFromFile("authorized-ssh-private-key")
+	if err != nil {
+		panic("Failed to read private key: " + err.Error())
 	}
 
 	tunnelServerUrl, tunnelUrlErr := getTunnelServerUrl()
-	if err != nil {
+	if tunnelUrlErr != nil {
 		panic("Failed to retrieve tunnel server url: " + tunnelUrlErr.Error())
+	}
+
+	tunnelFingerprint, tunnelFingerprintErr := getTunnelServerFingerprint()
+	if tunnelFingerprintErr != nil {
+		panic("Failed to retrieve tunnel server fingerprint: " + tunnelFingerprintErr.Error())
+	}
+
+	sshConfig, err := ssh.GetAuthSshConfigs("ubuntu", *privateKeyPtr, tunnelFingerprint)
+	if err != nil {
+		panic("Failed to initiate ssh auth configs: " + err.Error())
 	}
 
 	ingressTunnel := &ssh.SshTunnel{
