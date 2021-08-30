@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	_ "embed"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -20,7 +21,12 @@ func handleForcedTermination(manager *ssh.SshTunnelsManager) {
 	}()
 }
 
-func getTunnelServerUrl() (string, error) {
+func getTunnelServerUrl(fallbackVal string) (string, error) {
+	//If a tunnel-server-url file doesn't exist, use the fallback value
+	if _, err := os.Stat("tunnel-server-url"); err != nil && fallbackVal != "" {
+		return fallbackVal, nil
+	}
+
 	buffer, err := ioutil.ReadFile("tunnel-server-url")
 	if err != nil {
 		return "", err
@@ -28,7 +34,12 @@ func getTunnelServerUrl() (string, error) {
 	return strings.TrimSuffix(string(buffer), "\n"), nil
 }
 
-func getTunnelServerFingerprint() (string, error) {
+func getTunnelServerFingerprint(fallbackVal string) (string, error) {
+	//If a host-md5-fingerprint file doesn't exist, use the fallback value
+	if _, err := os.Stat("host-md5-fingerprint"); err != nil && fallbackVal != "" {
+		return fallbackVal, nil
+	}
+
 	buffer, err := ioutil.ReadFile("host-md5-fingerprint")
 	if err != nil {
 		return "", err
@@ -36,7 +47,12 @@ func getTunnelServerFingerprint() (string, error) {
 	return string(buffer), nil
 }
 
-func getSshPrivateKey() ([]byte, error) {
+func getSshPrivateKey(fallbackVal string) ([]byte, error) {
+	//If a authorized-ssh-private-key file doesn't exist, use the fallback value
+	if _, err := os.Stat("authorized-ssh-private-key"); err != nil && fallbackVal != "" {
+		return []byte(fallbackVal), nil
+	}
+
 	buffer, err := ioutil.ReadFile("authorized-ssh-private-key")
 	if err != nil {
 		return []byte{}, err
@@ -44,8 +60,17 @@ func getSshPrivateKey() ([]byte, error) {
 	return buffer, nil
 }
 
+var (
+    //go:embed tunnel-server-url
+    embeddedTunnelServerUrl string
+    //go:embed authorized-ssh-private-key
+    embeddedAuthorizedPrivateKey string
+	//go:embed host-md5-fingerprint
+	embeddedTunnelFingerprint string
+)
+
 func main() {
-    privateKeyAsBytes, keyAsBytesErr := getSshPrivateKey()
+    privateKeyAsBytes, keyAsBytesErr := getSshPrivateKey(embeddedAuthorizedPrivateKey)
 	if keyAsBytesErr != nil {
 		panic("Failed to read private key: " + keyAsBytesErr.Error())
 	}
@@ -55,12 +80,12 @@ func main() {
 		panic("Failed to parse private key: " + keyParseErr.Error())
 	}
 
-	tunnelServerUrl, tunnelUrlErr := getTunnelServerUrl()
+	tunnelServerUrl, tunnelUrlErr := getTunnelServerUrl(embeddedTunnelServerUrl)
 	if tunnelUrlErr != nil {
 		panic("Failed to retrieve tunnel server url: " + tunnelUrlErr.Error())
 	}
 
-	tunnelFingerprint, tunnelFingerprintErr := getTunnelServerFingerprint()
+	tunnelFingerprint, tunnelFingerprintErr := getTunnelServerFingerprint(embeddedTunnelFingerprint)
 	if tunnelFingerprintErr != nil {
 		panic("Failed to retrieve tunnel server fingerprint: " + tunnelFingerprintErr.Error())
 	}
