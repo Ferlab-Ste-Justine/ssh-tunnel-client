@@ -15,9 +15,9 @@ func handleForcedTermination(tunnels []*ssh.SshTunnel) {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func(){
 		for _ = range c {
-			for _, tunnel := range tunnels {
-			    tunnel.Stop()
-			}
+            for _, tunnel := range tunnels {
+                tunnel.Stop()
+            }
 		}
 	}()
 }
@@ -38,10 +38,23 @@ func getTunnelServerFingerprint() (string, error) {
 	return string(buffer), nil
 }
 
-func main() {
-	privateKeyPtr, err := ssh.ReadPrivateKeyFromFile("authorized-ssh-private-key")
+func getSshPrivateKey() ([]byte, error) {
+	buffer, err := ioutil.ReadFile("authorized-ssh-private-key")
 	if err != nil {
-		panic("Failed to read private key: " + err.Error())
+		return []byte{}, err
+	}
+	return buffer, nil
+}
+
+func main() {
+    privateKeyAsBytes, keyAsBytesErr := getSshPrivateKey()
+	if keyAsBytesErr != nil {
+		panic("Failed to read private key: " + keyAsBytesErr.Error())
+	}
+
+	privateKeyPtr, keyParseErr := ssh.ParsePrivateKey(privateKeyAsBytes)
+	if keyParseErr != nil {
+		panic("Failed to parse private key: " + keyParseErr.Error())
 	}
 
 	tunnelServerUrl, tunnelUrlErr := getTunnelServerUrl()
@@ -84,7 +97,7 @@ func main() {
 				apiTunnel.Stop()
 			}
 	    }
-		done<-struct{}{}
+        done<-struct{}{}
 	}()
 
 	go func() {
@@ -95,7 +108,7 @@ func main() {
 				ingressTunnel.Stop()
 			}
 	    }
-		done<-struct{}{}
+        done<-struct{}{}
 	}()
 
     <-done

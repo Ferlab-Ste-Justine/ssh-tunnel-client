@@ -1,23 +1,16 @@
 package ssh
 
 import (
-	"io/ioutil"
-
 	"golang.org/x/crypto/ssh"
 )
 
-func ReadPrivateKeyFromFile(path string) (*ssh.AuthMethod, error) {
-	buffer, readFileErr := ioutil.ReadFile(path)
-	if readFileErr != nil {
-		return nil, readFileErr
-	}
-
-	key, parseKeyErr := ssh.ParsePrivateKey(buffer)
+func ParsePrivateKey(key []byte) (*ssh.AuthMethod, error) {
+	parsedKey, parseKeyErr := ssh.ParsePrivateKey(key)
 	if parseKeyErr != nil {
 		return nil, parseKeyErr
 	}
 
-	auth := ssh.PublicKeys(key)
+	auth := ssh.PublicKeys(parsedKey)
 
 	return &auth, nil
 }
