@@ -18,4 +18,16 @@ Not as customizable as it should be for general availability, but it fits our ne
 
 # Usage
 
-Compile it, customize your input files and launch it. When you are done, hit **cltr + c**.
+## Option 1: Use Ssh files baked in the binary
+
+Put the right values in the **host-md5-fingerprint**, **authorized-ssh-private-key** and **tunnel-server-url** files, compile the binary and distribute it to your users via a secure channel.
+
+Users will be able to run the binary without any other dependencies.
+
+## Option 2: Pass Ssh files at run time
+
+Compile your binary and distribute it via public or private channels.
+
+Additionally, provide to your users valid **host-md5-fingerprint**, **authorized-ssh-private-key** and **tunnel-server-url** files via a secure channel.
+
+The end-user will need to place those files in the same directory as the binary as then run it.
