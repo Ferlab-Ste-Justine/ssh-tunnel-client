@@ -1,6 +1,7 @@
 package ssh
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -60,31 +61,31 @@ func (tunnel *SshTunnel) Listen() error {
 }
 
 func pipeConn(writer net.Conn, reader net.Conn, c chan error) {
+	defer writer.Close()
+	defer reader.Close()
+
 	_, err := io.Copy(writer, reader)
 	c <- err
 }
 
 
 func (tunnel *SshTunnel) forwardFrontendToBackend(frontendConn net.Conn) {
-	defer frontendConn.Close()
-
 	backendConn, err := tunnel.sshConn.Dial("tcp", tunnel.RemoteBackendUrl)
 	if err != nil {
 		fmt.Printf("Backend dial error: %s\n", err)
 		return
 	}
-	defer backendConn.Close()
 
 	pipeErrChan := make(chan error)
 
 	go pipeConn(frontendConn, backendConn, pipeErrChan)
 	go pipeConn(backendConn, frontendConn, pipeErrChan)
 	err = <- pipeErrChan
-	if err != nil {
-		fmt.Printf("io.Copy error: %s\n", err)
+	if err != nil && !errors.Is(err, net.ErrClosed) {
+		fmt.Printf("%s\n", err)
 	}
 	err = <- pipeErrChan
-	if err != nil {
-		fmt.Printf("io.Copy error: %s\n", err)
+	if err != nil && !errors.Is(err, net.ErrClosed) {
+		fmt.Printf("%s\n", err)
 	}
 }
