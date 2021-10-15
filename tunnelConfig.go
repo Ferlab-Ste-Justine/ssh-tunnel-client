@@ -22,7 +22,7 @@ type TunnelConfig struct {
 
 func getTunnelConfig(fallbackVal string) (TunnelConfig, error) {
 	_, err := os.Stat("tunnel_config.json")
-	configFileExists := err != nil
+	configFileExists := err == nil
     
 	if !configFileExists && fallbackVal == "" {
 		return TunnelConfig{}, errors.New("tunnel_config.json is not present in running directory nor embedded in binary")
