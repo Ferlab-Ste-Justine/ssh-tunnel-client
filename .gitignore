@@ -1,6 +1,5 @@
-authorized-ssh-private-key
-host-md5-fingerprint
-tunnel-server-url
+auth_secret
+tunnel_config.json
 inspirations.txt
 k8tunnel
 test/

@@ -1,33 +1,43 @@
 # About
 
-This project provides a convenience for users to open an ssh-tunnel to a bastion sitting in front of a private kubernetes cluster.
+This project provides a convenience for users to open an ssh-tunnel to a bastion sitting in front of a private services.
 
-# Assumptions
-
-Currently, mostly due to the prototypal status of this project, the following assumptions are made:
-
-- You want to open the k8 api and a tls ingress ports and your bastion load balances this traffic for you (by running some reverse proxy) on ports 6443 and 443 locally.
-- Similar ports are available to be opened on your localhost
-- You will login to the bastion as user **ubuntu**
-- The following files are local to your binary:
-  - host-md5-fingerprint: Contains your bastion's ssh fingerprint
-  - authorized-ssh-private-key: Contains the ssh key that you will use to authenticate against the bastion 
-  - tunnel-server-url: Contains the ssh url of the bastion in the following format ```<ip>:<port>```
-
-Not as customizable as it should be for general availability, but it fits our needs right at this moment.
+It allows for some configurability in ssh connection parameters and the bindings to the services offered on the bastion's network.
 
 # Usage
 
-## Option 1: Use Ssh files baked in the binary
+## Requisite Files
 
-Put the right values in the **host-md5-fingerprint**, **authorized-ssh-private-key** and **tunnel-server-url** files, compile the binary and distribute it to your users via a secure channel.
+The client requires an **auth_secret** file, either embedded in the binary at build time or present in the running directory. This file should contain either the private ssh key or login password of the user to be sshed as.
 
-Users will be able to run the binary without any other dependencies.
+The client also requires a **tunnel_config.json** file, either embbeded in the binary at build time or present in the running directory. The file should have the following format:
 
-## Option 2: Pass Ssh files at run time
+```
+{
+    "host_md5_fingerprint": "<md5 fingerprint of the bastions public key>",
+    "host_url": "<bastion ip:bastion ssh port>",
+    "host_user": "<bastion user to ssh as>",
+    "auth_method": "key"|"password",
+    "bindings": [
+        {
+            "local": "<local ip to bind service 1 on>:<local port to bind service 1 on>",
+            "remote": "<Remote ip on the bastion's network where service 1 is reachable>:<Remote port that service 1 can be reached at>"
+        },
+        {
+            "local": "<local ip to bind service 2 on>:<local port to bind service 2 on>",
+            "remote": "<Remote ip on the bastion's network where service 2 is reachable>:<Remote port that service 2 can be reached at>"
+        },
+        ...
+    ]
+}
+```
 
-Compile your binary and distribute it via public or private channels.
+## Embedding Files
 
-Additionally, provide to your users valid **host-md5-fingerprint**, **authorized-ssh-private-key** and **tunnel-server-url** files via a secure channel.
+The **auth_secret** and/or the **tunnel_config.json** files can be included in this directory prior to building the binary in which case they'll be embedded in the binary.
 
-The end-user will need to place those files in the same directory as the binary as then run it.
+If both files are embedded in the binary, end-users will not have to define them (though the binary should be considered a secret in this case).
+
+Those files can also be put in the running directory of the program after the binary is built.
+
+If the files were embedded in the binary **AND** are also provided in the running directory of the program, the files in the running directory of the program will take precedence.
