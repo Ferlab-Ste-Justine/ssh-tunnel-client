@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"ferlab/k8tunnel/ssh"
+	"ferlab/sshtunnel/ssh"
 )
 
 func handleForcedTermination(manager *ssh.SshTunnelsManager) {

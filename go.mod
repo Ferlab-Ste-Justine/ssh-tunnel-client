@@ -1,4 +1,4 @@
-module ferlab/k8tunnel
+module ferlab/sshtunnel
 
 go 1.16
 
