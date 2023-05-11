@@ -14,7 +14,7 @@ The client also requires a **tunnel_config.json** file, either embbeded in the b
 
 ```
 {
-    "host_md5_fingerprint": "<md5 fingerprint of the bastions public key>",
+    "host_sha256_fingerprint": "<sha256 fingerprint of the bastions public key>",
     "host_url": "<bastion ip:bastion ssh port>",
     "host_user": "<bastion user to ssh as>",
     "auth_method": "key"|"password",
