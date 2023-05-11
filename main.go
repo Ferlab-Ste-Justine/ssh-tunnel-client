@@ -55,7 +55,7 @@ func main() {
 		panic("Failed to parse authentication secret: " + authMethodErr.Error())
 	}
 
-	sshConfig, err := ssh.GetAuthSshConfigs(tunnelConfig.HostUser, *authMethod, tunnelConfig.HostMd5FingerPrint)
+	sshConfig, err := ssh.GetAuthSshConfigs(tunnelConfig.HostUser, *authMethod, tunnelConfig.HostSha256FingerPrint)
 	if err != nil {
 		panic("Failed to initiate ssh auth configs: " + err.Error())
 	}

@@ -13,11 +13,11 @@ type TunnelConfigBinding struct {
 }
 
 type TunnelConfig struct {
-	HostMd5FingerPrint string                `json:"host_md5_fingerprint"`
-	HostUrl            string                `json:"host_url"`
-	HostUser           string                `json:"host_user"`
-	AuthMethod         string                `json:"auth_method"`
-	Bindings           []TunnelConfigBinding `json:"bindings"`
+	HostSha256FingerPrint string                `json:"host_sha256_fingerprint"`
+	HostUrl               string                `json:"host_url"`
+	HostUser              string                `json:"host_user"`
+	AuthMethod            string                `json:"auth_method"`
+	Bindings              []TunnelConfigBinding `json:"bindings"`
 }
 
 func getTunnelConfig(fallbackVal string) (TunnelConfig, error) {
