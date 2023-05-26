@@ -1,5 +1,6 @@
+sshtunnel
 auth_secret
 tunnel_config.json
 inspirations.txt
-k8tunnel
+build/
 test/

@@ -6,6 +6,8 @@ It allows for some configurability in ssh connection parameters and the bindings
 
 # Usage
 
+Run `./build.sh` to build the client for **linux-amd64**, **macos-amd64** and **windows-amd64**. The client files will be in the **build** directory.
+
 ## Requisite Files
 
 The client requires an **auth_secret** file, either embedded in the binary at build time or present in the running directory. This file should contain either the private ssh key or login password of the user to be sshed as.
@@ -32,11 +34,11 @@ The client also requires a **tunnel_config.json** file, either embbeded in the b
 }
 ```
 
-## Embedding Files
+### Embedding Files
 
-The **auth_secret** and/or the **tunnel_config.json** files can be included in this directory prior to building the binary in which case they'll be embedded in the binary.
+The **auth_secret** and/or the **tunnel_config.json** files with proper content can be included in this directory prior to building the binary in which case they'll be embedded in the binary. Otherwise, empty ones should be generated with `go generate`.
 
-If both files are embedded in the binary, end-users will not have to define them (though the binary should be considered a secret in this case).
+If both files with proper content are embedded in the binary, end-users will not have to define them (though the binary should be considered a secret in this case).
 
 Those files can also be put in the running directory of the program after the binary is built.
 

@@ -1,3 +1,5 @@
+//go:generate go run generate/generate.go
+
 package main
 
 import (
@@ -33,8 +35,8 @@ func getAuthSecret(fallbackVal string) ([]byte, error) {
 }
 
 var (
-    //go:embed auth_secret
-    authSecret string
+	//go:embed auth_secret
+	authSecret string
 	//go:embed tunnel_config.json
 	tunnelConfig string
 )
