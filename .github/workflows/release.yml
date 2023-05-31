@@ -16,6 +16,8 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - name: Generate Empty Requisite Files
+        run: go generate
       - name: Build Linux Amd64 Binary
         run: |
           mkdir linux-amd64
